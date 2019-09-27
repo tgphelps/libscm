@@ -20,14 +20,19 @@ def add_globals(env: Env) -> Env:
     import math
     import operator as op
     env.update(vars(math))  # sin, sqrt, ...
+    # XXX Should remove some __*__ vars that aren't math functions
+
     env.update(
      {'+': op.add, '-': op.sub, '*': op.mul, '/': op.truediv, 'not': op.not_,
       '>': op.gt, '<': op.lt, '>=': op.ge, '<=': op.le, '=': op.eq,
-      'equal?': op.eq, 'eq?': op.is_, 'length': len,
+      'equal?': op.eq, 'eq?': op.is_, 'length': len, 'append': op.add,
       'cons': lambda x, y: [x]+y,
-      'car': lambda x: x[0], 'cdr': lambda x: x[1:], 'append': op.add,
-      'list': lambda *x: list(x), 'list?': lambda x: isa(x, list),
-      'null?': lambda x: x == [], 'symbol?': lambda x: isa(x, Symbol)})
+      'car': lambda x: x[0],
+      'cdr': lambda x: x[1:],
+      'list': lambda *x: list(x),
+      'list?': lambda x: isa(x, list),
+      'null?': lambda x: x == [],
+      'symbol?': lambda x: isa(x, Symbol)})
     return env
 
 
@@ -116,13 +121,17 @@ def to_string(exp: str) -> str:
            if isa(exp, list) else str(exp)
 
 
-def repl(prompt='lis.py> ') -> None:
+def main(prompt='lis.py> ') -> None:
     "A prompt-read-eval-print loop."
     while True:
-        val = eval(parse(input(prompt)))
+        try:
+            s = input(prompt)
+        except EOFError:
+            break
+        val = eval(parse(s))
         if val is not None:
             print(to_string(val))
 
 
 if __name__ == '__main__':
-    repl()
+    main()
