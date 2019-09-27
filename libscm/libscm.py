@@ -74,12 +74,9 @@ def eval(x, env=global_env) -> Any:
 # parse, read, and user interaction
 
 
-def read(s: str) -> Any:
+def parse(s: str) -> Any:
     "Read a Scheme expression from a string."
     return read_from(tokenize(s))
-
-
-parse = read
 
 
 def tokenize(s: str) -> List[str]:
@@ -92,13 +89,13 @@ def read_from(tokens: List[str]) -> Any:
     if len(tokens) == 0:
         raise SyntaxError('unexpected EOF while reading')
     token = tokens.pop(0)
-    if '(' == token:
+    if token == '(':
         L = []
         while tokens[0] != ')':
             L.append(read_from(tokens))
         tokens.pop(0)  # pop off ')'
         return L
-    elif ')' == token:
+    elif token == ')':
         raise SyntaxError('unexpected )')
     else:
         return atom(token)
@@ -128,7 +125,9 @@ def main(prompt='lis.py> ') -> None:
             s = input(prompt)
         except EOFError:
             break
-        val = eval(parse(s))
+        lst = parse(s)
+        print('tokens =', lst)
+        val = eval(lst)
         if val is not None:
             print(to_string(val))
 

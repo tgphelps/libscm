@@ -1,5 +1,5 @@
 import sys
-import libscm.libscm as scm
+import libscm as scm
 
 
 def main():

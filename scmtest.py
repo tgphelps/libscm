@@ -129,7 +129,7 @@ def test(tests, name=''):
 
 
 if __name__ == '__main__':
-    import libscm.libscm as scm
+    import libscm as scm
 
     test(scm_tests, 'scheme')
     # from lispy import *
