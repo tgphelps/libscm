@@ -111,10 +111,11 @@ scm2_tests = [
 def test(tests, name=''):
     "For each (exp, expected) test case, see if eval(parse(exp)) == expected."
     fails = 0
+
     for (x, expected) in tests:
         try:
-            result = eval(parse(x))
-            print(x, '=>', to_string(result))
+            result = scm.eval(scm.parse(x))
+            print(x, '=>', scm.to_string(result))
             ok = (result == expected)
         except Exception as e:
             print(x, '=raises=>', type(e).__name__, e)
@@ -122,12 +123,14 @@ def test(tests, name=''):
         if not ok:
             fails += 1
             print('FAIL!!!  Expected', expected)
+
     print('%s %s: %d out of %d tests fail.' %
           ('*'*45, name, fails, len(tests)))
 
 
 if __name__ == '__main__':
-    from libscm.libscm import parse, to_string, eval
+    import libscm.libscm as scm
+
     test(scm_tests, 'scheme')
     # from lispy import *
     # test(lis_tests+lispy_tests, 'lispy.py')
