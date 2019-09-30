@@ -38,6 +38,10 @@ def add_globals(env: Env) -> Env:
 
 global_env = add_globals(Env())
 
+
+def add_global_var(var: str, val: Any) -> None:
+    global_env[var] = val
+
 isa = isinstance
 
 
@@ -76,7 +80,7 @@ def eval(x, env=global_env) -> Any:
 
 def parse(s: str) -> Any:
     "Read a Scheme expression from a string."
-    return read_from(tokenize(s))
+    return read_expr(tokenize(s))
 
 
 def tokenize(s: str) -> List[str]:
@@ -84,7 +88,7 @@ def tokenize(s: str) -> List[str]:
     return s.replace('(', ' ( ').replace(')', ' ) ').split()
 
 
-def read_from(tokens: List[str]) -> Any:
+def read_expr(tokens: List[str]) -> Any:
     "Read an expression from a sequence of tokens."
     if len(tokens) == 0:
         raise SyntaxError('unexpected EOF while reading')
@@ -92,7 +96,7 @@ def read_from(tokens: List[str]) -> Any:
     if token == '(':
         L = []
         while tokens[0] != ')':
-            L.append(read_from(tokens))
+            L.append(read_expr(tokens))
         tokens.pop(0)  # pop off ')'
         return L
     elif token == ')':
@@ -125,11 +129,16 @@ def main(prompt='lis.py> ') -> None:
             s = input(prompt)
         except EOFError:
             break
-        lst = parse(s)
-        print('tokens =', lst)
-        val = eval(lst)
-        if val is not None:
-            print(to_string(val))
+        tokens = tokenize(s)
+        # expr = parse(s)
+
+        while len(tokens) > 0:
+            expr = read_expr(tokens)
+            # print('expr =', expr)
+            # print('left =', tokens)
+            val = eval(expr)
+            if val is not None:
+                print(to_string(val))
 
 
 if __name__ == '__main__':
