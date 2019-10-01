@@ -4,15 +4,35 @@ from typing import Any, List
 Symbol = str
 
 
+class UnboundError(Exception):
+    pass
+
+
 class Env(dict):
     "An environment: a dict of {'var':val} pairs, with an outer Env."
     def __init__(self, parms=(), args=(), outer=None):
         self.update(list(zip(parms, args)))
         self.outer = outer
+        self.err_handler = None
 
     def find(self, var):
         "Find the innermost Env where var appears."
-        return self if var in self else self.outer.find(var)
+        # return self if var in self else self.outer.find(var)
+        while True:
+            if var in self:
+                return self
+            else:
+                if self.outer:
+                    self.outer.find(var)
+                else:
+                    if self.err_handler:
+                        self.err_handler(var)  # Fix the error or abort
+                        self.find(var)
+                    else:
+                        raise UnboundError(var)
+
+    def set_err_handler(self, func):
+        self.err_handler = func
 
 
 def add_globals(env: Env) -> Env:
@@ -36,11 +56,22 @@ def add_globals(env: Env) -> Env:
     return env
 
 
+def handle_it(var):
+    "Handle an unbound 'var' error. Just abort."
+    # print(f"Var '{var}' unbound")
+    raise UnboundError(var)
+
+
 global_env = add_globals(Env())
+# global_env.set_err_handler(handle_it)
 
 
 def add_global_var(var: str, val: Any) -> None:
     global_env[var] = val
+
+
+def set_err_handler(func):
+    global_env.set_err_handler(func)
 
 isa = isinstance
 
@@ -85,7 +116,9 @@ def parse(s: str) -> Any:
 
 def tokenize(s: str) -> List[str]:
     "Convert a string into a list of tokens."
-    return s.replace('(', ' ( ').replace(')', ' ) ').split()
+    tokens = s.replace('(', ' ( ').replace(')', ' ) ').split()
+    # print(f'Tokens: {tokens}')
+    return tokens
 
 
 def read_expr(tokens: List[str]) -> Any:
@@ -118,7 +151,7 @@ def atom(token: str) -> Any:
 
 def to_string(exp: str) -> str:
     "Convert a Python object back into a Lisp-readable string."
-    return '('+' '.join(map(to_string, exp))+')' \
+    return '(' + ' '.join(map(to_string, exp)) + ')' \
            if isa(exp, list) else str(exp)
 
 
